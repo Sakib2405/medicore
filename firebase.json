@@ -1,0 +1,41 @@
+{
+	"hosting": {
+		"public": "build/web",
+		"ignore": [
+			"firebase.json",
+			"**/.*",
+			"**/node_modules/**"
+		],
+		"rewrites": [
+			{
+				"source": "**",
+				"destination": "/index.html"
+			}
+		]
+	},
+	"firestore": {
+		"rules": "firestore.rules",
+		"indexes": "firestore.indexes.json"
+	},
+	"flutter": {
+		"platforms": {
+			"android": {
+				"default": {
+					"projectId": "medicore-73fde",
+					"appId": "1:1091595125716:android:f01023ba7af990f8584c41",
+					"fileOutput": "android/app/google-services.json"
+				}
+			},
+			"dart": {
+				"lib/firebase_options.dart": {
+					"projectId": "medicore-73fde",
+					"configurations": {
+						"android": "1:1091595125716:android:f01023ba7af990f8584c41",
+						"web": "1:1091595125716:web:c8dd0c6d7eec99ef584c41",
+						"windows": "1:1091595125716:web:d7a678edda4bdb39584c41"
+					}
+				}
+			}
+		}
+	}
+}

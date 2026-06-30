@@ -1,0 +1,52 @@
+{
+  "departments": [
+    {
+      "id": 1,
+      "name": "Cardiology",
+      "description": "Heart and cardiovascular system",
+      "icon": "assets/icons/cardiology.png",
+      "color": "#FF5252",
+      "doctorsCount": 12
+    },
+    {
+      "id": 2,
+      "name": "Neurology",
+      "description": "Brain and nervous system",
+      "icon": "assets/icons/neurology.png",
+      "color": "#7C4DFF",
+      "doctorsCount": 8
+    },
+    {
+      "id": 3,
+      "name": "Pediatrics",
+      "description": "Children's health",
+      "icon": "assets/icons/pediatrics.png",
+      "color": "#00E5FF",
+      "doctorsCount": 15
+    },
+    {
+      "id": 4,
+      "name": "Orthopedics",
+      "description": "Bones and joints",
+      "icon": "assets/icons/orthopedics.png",
+      "color": "#69F0AE",
+      "doctorsCount": 10
+    },
+    {
+      "id": 5,
+      "name": "Dermatology",
+      "description": "Skin and hair",
+      "icon": "assets/icons/dermatology.png",
+      "color": "#FFAB40",
+      "doctorsCount": 6
+    },
+    {
+      "id": 6,
+      "name": "Dentistry",
+      "description": "Teeth and oral health",
+      "icon": "assets/icons/dentistry.png",
+      "color": "#40C4FF",
+      "doctorsCount": 9
+    }
+  ]
+}

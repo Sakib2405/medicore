@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base href="/" />
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Google Sign-In web client ID: inserted from .env -->
+    <meta name="google-signin-client_id" content="1091595125716-a67gh75b6rrl7vsbdtd97630769a03a3.apps.googleusercontent.com" />
+    <title>Medicore</title>
+    <link rel="manifest" href="manifest.json" />
+    <meta name="description" content="Medicore - Healthcare App" />
+    <script defer src="flutter.js" crossorigin="anonymous"></script>
+    <style>
+      :root { color-scheme: light dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0f172a;
+        color: #e2e8f0;
+      }
+      .center {
+        max-width: 560px;
+        width: 100%;
+        padding: 24px;
+        text-align: center;
+      }
+      .pill { display: inline-block; padding: 8px 14px; border-radius: 999px; text-decoration: none; }
+      .btn { background: #2563eb; color: #fff; }
+      .btn-outline { border: 1px solid #38bdf8; color: #38bdf8; background: transparent; }
+      .muted { opacity: .75; font-size: 12px; }
+      .icon { font-size: 42px; margin-bottom: 12px; }
+      .success { color: #22c55e; }
+      .error { color: #ef4444; }
+      .warning { color: #f59e0b; }
+      .info { color: #38bdf8; }
+      .ring { width: 36px; height: 36px; border-radius: 50%; border: 3px solid rgba(255,255,255,.25); border-top-color: #38bdf8; margin: 16px auto; animation: spin 1s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+  </head>
+  <body>
+    <div id="special-root" class="center" style="display:none"></div>
+    <script>
+      (function () {
+        const path = window.location.pathname;
+        const specialRoutes = new Set(['/success','/fail','/cancel','/confirm-email','/reset-password']);
+        if (!specialRoutes.has(path)) {
+          // Not a special route: bootstrap Flutter app
+          window.addEventListener('load', function () {
+            _flutter.loader.loadEntrypoint({
+              onEntrypointLoaded: async function(engineInitializer) {
+                const appRunner = await engineInitializer.initializeEngine();
+                await appRunner.runApp();
+              }
+            });
+          });
+          return; // Do not render special page
+        }
+
+        // Special route handling (kept lightweight, no Flutter bootstrapping)
+        document.title = 'Medicore';
+        const root = document.getElementById('special-root');
+        root.style.display = 'block';
+        const currentDomain = window.location.hostname;
+        const urlParams = new URLSearchParams(window.location.search);
+
+        function write(html) { root.innerHTML = html; }
+
+        function paymentSuccess() {
+          write(`
+            <div class="icon success">✓</div>
+            <h2>Payment Successful</h2>
+            <p>Thank you. Your transaction completed successfully.</p>
+            <div class="ring"></div>
+            <p class="muted">Redirecting to Medicore app…</p>
+            <p class="muted"><a class="pill btn-outline" href="medicore://payment/success">Open app</a></p>
+          `);
+          setTimeout(() => { window.location.href = 'medicore://payment/success?status=success&domain=' + currentDomain; }, 1200);
+          setTimeout(() => { window.location.href = 'https://medicore.app'; }, 4000);
+        }
+
+        function paymentFailed() {
+          write(`
+            <div class="icon error">✗</div>
+            <h2>Payment Failed</h2>
+            <p>We couldn’t process your payment. Please try again.</p>
+            <div class="ring"></div>
+            <p class="muted"><a class="pill btn-outline" href="medicore://payment/failed">Open app</a></p>
+          `);
+          setTimeout(() => { window.location.href = 'medicore://payment/failed?status=failed&domain=' + currentDomain; }, 1200);
+          setTimeout(() => { window.location.href = 'https://medicore.app'; }, 4000);
+        }
+
+        function paymentCancelled() {
+          write(`
+            <div class="icon warning">⚠</div>
+            <h2>Payment Cancelled</h2>
+            <p>No amount has been deducted.</p>
+            <div class="ring"></div>
+            <a class="pill btn" href="medicore://payment/cancelled">Return to app</a>
+          `);
+          setTimeout(() => { window.location.href = 'medicore://payment/cancelled?status=cancelled&domain=' + currentDomain; }, 1500);
+        }
+
+        function verifyEmail() {
+          const mode = urlParams.get('mode');
+          const oobCode = urlParams.get('oobCode');
+          const apiKey = urlParams.get('apiKey');
+          const continueUrl = urlParams.get('continueUrl');
+          if (oobCode && mode === 'verifyEmail') {
+            write(`
+              <div class="icon info">✉</div>
+              <h2>Email Verification</h2>
+              <p>Verifying your email…</p>
+              <div class="ring"></div>
+              <p class="muted">We’ll redirect you to the app.</p>
+            `);
+            setTimeout(() => {
+              const appLink = `medicore://verify-email?mode=verifyEmail&oobCode=${oobCode}&apiKey=${apiKey}&continueUrl=${continueUrl || ''}`;
+              window.location.href = appLink;
+            }, 1200);
+            setTimeout(() => { emailVerifiedFallback(); }, 3000);
+          } else {
+            write(`
+              <div class="icon error">✗</div>
+              <h2>Invalid Verification Link</h2>
+              <a class="pill btn" href="https://medicore.app">Go to Homepage</a>
+            `);
+          }
+        }
+
+        function emailVerifiedFallback() {
+          write(`
+            <div class="icon success">✓</div>
+            <h2>Email Verified</h2>
+            <p>You can now use all features.</p>
+            <div class="ring"></div>
+            <p class="muted">Redirecting…</p>
+          `);
+          setTimeout(() => { window.location.href = 'medicore://email-verified?status=success'; }, 1500);
+        }
+
+        function resetPassword() {
+          const mode = urlParams.get('mode');
+          const oobCode = urlParams.get('oobCode');
+          const apiKey = urlParams.get('apiKey');
+          if (oobCode && mode === 'resetPassword') {
+            write(`
+              <div class="icon info">🔒</div>
+              <h2>Reset Password</h2>
+              <p>Preparing reset…</p>
+              <div class="ring"></div>
+              <p class="muted">You’ll be redirected shortly.</p>
+            `);
+            setTimeout(() => {
+              const appLink = `medicore://reset-password?mode=resetPassword&oobCode=${oobCode}&apiKey=${apiKey}`;
+              window.location.href = appLink;
+            }, 1200);
+            setTimeout(() => { showResetForm(oobCode, apiKey); }, 4000);
+          } else {
+            write(`
+              <div class="icon error">✗</div>
+              <h2>Invalid Reset Link</h2>
+              <a class="pill btn" href="https://medicore.app">Go to Homepage</a>
+            `);
+          }
+        }
+
+        function showResetForm(oobCode, apiKey) {
+          write(`
+            <div class="icon info">🔒</div>
+            <h2>Reset Your Password</h2>
+            <form id="resetForm" style="margin-top:16px;">
+              <input type="password" id="newPassword" placeholder="New password" style="padding:12px;width:100%;border-radius:8px;border:none;margin:6px 0;background:#e2e8f0;color:#0f172a;" minlength="6" required />
+              <input type="password" id="confirmPassword" placeholder="Confirm password" style="padding:12px;width:100%;border-radius:8px;border:none;margin:6px 0;background:#e2e8f0;color:#0f172a;" minlength="6" required />
+              <button type="submit" class="pill btn" style="width:100%;margin-top:8px;">Reset Password</button>
+            </form>
+            <div id="resetMessage" class="muted" style="min-height:20px;margin-top:10px;"></div>
+          `);
+          document.getElementById('resetForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const msg = document.getElementById('resetMessage');
+            const p1 = document.getElementById('newPassword').value;
+            const p2 = document.getElementById('confirmPassword').value;
+            if (p1 !== p2) { msg.innerHTML = '<span style="color:#ef4444">Passwords do not match</span>'; return; }
+            if (p1.length < 6) { msg.innerHTML = '<span style="color:#ef4444">Password must be at least 6 characters</span>'; return; }
+            msg.innerHTML = '<span style="color:#22c55e">Password reset successful! Redirecting…</span>';
+            setTimeout(() => { window.location.href = `medicore://reset-password?status=success&oobCode=${oobCode}`; }, 1500);
+          });
+        }
+
+        // Fallback message when app doesn’t open
+        let appOpened = false;
+        window.addEventListener('blur', () => { appOpened = true; });
+        function addFallback() {
+          if (!appOpened) {
+            const p = document.createElement('p');
+            p.className = 'muted';
+            p.style.marginTop = '12px';
+            p.innerHTML = `Can’t open app? <a class="pill btn-outline" href="https://medicore.app">Visit our homepage</a>`;
+            root.appendChild(p);
+          }
+        }
+        setTimeout(addFallback, 3000);
+
+        // Dispatch based on path
+        if (path === '/success') paymentSuccess();
+        else if (path === '/fail') paymentFailed();
+        else if (path === '/cancel') paymentCancelled();
+        else if (path === '/confirm-email') verifyEmail();
+        else if (path === '/reset-password') resetPassword();
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "symptoms": [
+    {"id": 1, "name": "Headache", "category": "Neurological", "severity": "Medium"},
+    {"id": 2, "name": "Fever", "category": "General", "severity": "Medium"},
+    {"id": 3, "name": "Cough", "category": "Respiratory", "severity": "Low"},
+    {"id": 4, "name": "Chest Pain", "category": "Cardiac", "severity": "High"},
+    {"id": 5, "name": "Stomach Pain", "category": "Digestive", "severity": "Medium"},
+    {"id": 6, "name": "Dizziness", "category": "Neurological", "severity": "Medium"},
+    {"id": 7, "name": "Shortness of Breath", "category": "Respiratory", "severity": "High"},
+    {"id": 8, "name": "Nausea", "category": "Digestive", "severity": "Medium"},
+    {"id": 9, "name": "Fatigue", "category": "General", "severity": "Low"},
+    {"id": 10, "name": "Joint Pain", "category": "Musculoskeletal", "severity": "Medium"}
+  ],
+  "categories": [
+    "Neurological", "Respiratory", "Cardiac", "Digestive",
+    "Musculoskeletal", "General", "Skin", "Eye", "Ear"
+  ]
+}

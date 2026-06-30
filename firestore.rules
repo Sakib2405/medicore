@@ -1,0 +1,140 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Users can read/write their own profile document
+    match /users/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow create: if request.auth != null && (
+        request.auth.uid == userId || isAdmin()
+      );
+      allow update: if isAdmin() || (
+        request.auth != null &&
+        request.auth.uid == userId &&
+        request.resource.data.role == resource.data.role &&
+        request.resource.data.isVerified == resource.data.isVerified &&
+        request.resource.data.verificationStatus == resource.data.verificationStatus
+      ) || (
+        // Allow admin email to bootstrap their own admin role on first setup
+        request.auth != null &&
+        request.auth.uid == userId &&
+        request.auth.token.email == 'admin@gmail.com'
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Email verification codes: user can read/write their own code doc
+    match /email_verification_codes/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Orders: owner can read; create only for self; updates allowed for owner
+    match /orders/{orderId} {
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Payments: users can create/read payment records for their own orders and appointments
+    match /payments/{paymentId} {
+      allow create: if request.auth != null &&
+        // Allow if:
+        // 1. Payment is for an order they own, OR
+        // 2. Payment is for an appointment (orderId starts with 'APPT_')
+        (
+          (
+            exists(/databases/$(database)/documents/orders/$(request.resource.data.orderId)) &&
+            get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.userId == request.auth.uid
+          ) ||
+          request.resource.data.orderId.matches('^APPT_.*')
+        );
+      allow read: if request.auth != null &&
+        // Allow if:
+        // 1. Payment is for an order they own, OR
+        // 2. Payment is for an appointment (orderId starts with 'APPT_')
+        (
+          (
+            exists(/databases/$(database)/documents/orders/$(resource.data.orderId)) &&
+            get(/databases/$(database)/documents/orders/$(resource.data.orderId)).data.userId == request.auth.uid
+          ) ||
+          resource.data.orderId.matches('^APPT_.*')
+        );
+      allow update, delete: if false; // payments are immutable once created
+    }
+
+    // Doctors are readable by anyone.
+    // Admin can create/manage all doctors; a doctor can update their own profile.
+    match /doctors/{docId} {
+      allow read: if true;
+      allow create: if isAdmin() || (
+        request.auth != null
+        && request.auth.uid == docId
+        && request.resource.data.uid == request.auth.uid
+      );
+      allow update: if isAdmin() || (
+        request.auth != null &&
+        request.auth.uid == docId &&
+        request.resource.data.uid == resource.data.uid &&
+        request.resource.data.isVerified == resource.data.isVerified &&
+        request.resource.data.verificationStatus == resource.data.verificationStatus
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Medicines are readable by anyone, writable by admin only.
+    match /medicines/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /appointments/{id} {
+      allow create: if request.auth != null
+        && request.resource.data.patientId == request.auth.uid;
+      // FIXED (2026-06-25): Allow any authenticated user to read appointments for slot checking.
+      // The previous rule blocked transaction reads when another patient's appointment
+      // existed at the same slot, causing booking failures.
+      allow read: if request.auth != null;
+      allow update, delete: if request.auth != null
+        && (resource.data.patientId == request.auth.uid
+            || resource.data.doctorId == request.auth.uid
+            || isAdmin());
+    }
+
+    // Patient profiles — owner can read/write their own record
+    match /patients/{patientId} {
+      allow read, write: if request.auth != null && request.auth.uid == patientId;
+    }
+
+    match /slot_guards/{guardId} {
+      allow create, read, delete: if request.auth != null;
+    }
+
+    match /patient_slot_guards/{guardId} {
+      allow create, read, delete: if request.auth != null;
+    }
+
+    // Prescriptions: doctor can create/read their own; patient can read their own
+    match /prescriptions/{prescriptionId} {
+      allow create: if request.auth != null
+        && request.resource.data.doctorId == request.auth.uid;
+      allow read: if request.auth != null
+        && (resource.data.doctorId == request.auth.uid
+            || resource.data.patientId == request.auth.uid
+            || isAdmin());
+      allow update: if request.auth != null
+        && (resource.data.doctorId == request.auth.uid
+            || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Fallback: deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

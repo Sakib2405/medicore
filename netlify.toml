@@ -1,0 +1,11 @@
+[build]
+  command = "flutter pub get && flutter build web --release --dart-define=GEMINI_API_KEY=$GEMINI_API_KEY --dart-define=GEMINI_PROXY_URL=$GEMINI_PROXY_URL --dart-define=SSL_STORE_ID=$SSL_STORE_ID --dart-define=SSL_STORE_PASSWORD=$SSL_STORE_PASSWORD --dart-define=SSL_SANDBOX=$SSL_SANDBOX --dart-define=SSL_SUCCESS_URL=$SSL_SUCCESS_URL --dart-define=SSL_FAIL_URL=$SSL_FAIL_URL --dart-define=SSL_CANCEL_URL=$SSL_CANCEL_URL --dart-define=GOOGLE_WEB_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID --dart-define=GOOGLE_MAPS_API_KEY=$GOOGLE_MAPS_API_KEY --dart-define=PREMIUM_VIEW=$PREMIUM_VIEW --dart-define=PREMIUM_TINT=$PREMIUM_TINT"
+  publish = "build/web"
+
+[build.environment]
+  FLUTTER_VERSION = "3.32.0"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

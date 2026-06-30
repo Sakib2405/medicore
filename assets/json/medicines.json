@@ -1,0 +1,41 @@
+{
+  "medicines": [
+    {
+      "id": 1,
+      "name": "Paracetamol",
+      "brand": "Panadol",
+      "category": "Pain Relief",
+      "price": 5.99,
+      "description": "For relief of pain and fever",
+      "dosage": "500mg",
+      "sideEffects": ["Nausea", "Rash"],
+      "requiresPrescription": false
+    },
+    {
+      "id": 2,
+      "name": "Amoxicillin",
+      "brand": "Amoxil",
+      "category": "Antibiotic",
+      "price": 15.50,
+      "description": "Antibiotic for bacterial infections",
+      "dosage": "250mg",
+      "sideEffects": ["Diarrhea", "Allergic reactions"],
+      "requiresPrescription": true
+    },
+    {
+      "id": 3,
+      "name": "Ibuprofen",
+      "brand": "Advil",
+      "category": "Anti-inflammatory",
+      "price": 8.75,
+      "description": "Reduces inflammation and pain",
+      "dosage": "200mg",
+      "sideEffects": ["Stomach pain", "Dizziness"],
+      "requiresPrescription": false
+    }
+  ],
+  "categories": [
+    "Pain Relief", "Antibiotic", "Anti-inflammatory", "Antihistamine",
+    "Antacid", "Vitamin", "Cardiac", "Diabetes", "Asthma"
+  ]
+}
